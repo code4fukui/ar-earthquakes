@@ -26,13 +26,14 @@ import { CSV } from "https://js.sabae.cc/CSV.js";
 import { deg2rad } from "https://code4fukui.github.io/ar-globe/deg2rad.js";
 import { lla2xyz } from "https://code4fukui.github.io/ar-globe/lla2xyz.js";
 import { createGlobe } from "https://code4fukui.github.io/ar-globe/createGlobe.js";
+import { RotateUI } from "https://code4fukui.github.io/ar-globe/RotateUI.js";
 
 const r = .5;
 
 const cx = 0;
 const cz = -r - .5;
 //const cy = r / 2;
-const cy = 0;
+const cy = -.2;
 
 camera.position.y = 0; // 1.5;
 
@@ -45,13 +46,18 @@ const createPointsEQ = async () => {
   }
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute("position", new THREE.Float32BufferAttribute(vertices, 3));
-  const material = new THREE.PointsMaterial({ size: 0.005, color: 0xff0000 });
+  const material = new THREE.PointsMaterial({ size: 0.001, color: 0xff0000 });
   return new THREE.Points(geometry, material);
 };
 
 const o = new THREE.Group();
+const eq = await createPointsEQ();
+//const eqscale = 0.98;
+const eqscale = 1;
+eq.scale.set(eqscale, eqscale, eqscale);
+o.add(eq);
+//o.add(await createGlobe([]));
 o.add(await createGlobe());
-o.add(await createPointsEQ());
 
 o.rotation.x = deg2rad(90);
 o.rotation.z = deg2rad(-100);
@@ -63,10 +69,14 @@ scene.add(o);
 const controls = new OrbitControls(camera, renderer.domElement);
 console.log(controls);
 
+// ui
+const rotateui = new RotateUI(o, r);
+
 const clock = new THREE.Clock();
 renderer.setAnimationLoop(() => {
   controls.update();
-  o.rotation.z -= .0005;
+  //o.rotation.z -= .0005;
+  rotateui.update(renderer);
   renderer.render(scene, camera);
 });
 
